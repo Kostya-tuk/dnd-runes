@@ -122,9 +122,9 @@ async function loadGameScreen() {
         appendChatMessage(msg);
     });
 
-    // Загружаем прогресс игрока
+    // Загружаем прогресс игрока (используем dbClient вместо supabase)
     if (!DB.isMaster) {
-        const { data: progress } = await supabase
+        const { data: progress } = await dbClient
             .from('player_progress')
             .select('*')
             .eq('room_id', DB.currentRoom.id)
@@ -255,10 +255,6 @@ async function refreshMasterPanels() {
     if (!DB.isMaster) return;
     const toolsPanelBody = document.getElementById('tools-panel-body');
     if (!toolsPanelBody) return;
-
-    // Очищаем только секции с данными, оставляя переводчик
-    const existingTranslator = toolsPanelBody.querySelector('.translator-section');
-    const existingTitle = toolsPanelBody.querySelector('h3');
 
     toolsPanelBody.innerHTML = '';
     document.getElementById('tools-panel-title').textContent = 'Инструменты мастера';
