@@ -1,142 +1,32 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Рунический портал</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-</head>
-<body>
-    <div class="particles" id="particles"></div>
-
-    <!-- Экран входа -->
-    <div id="login-screen" class="screen active">
-        <div class="login-container">
-            <div class="rune-circle">
-                <svg viewBox="0 0 200 200" class="rune-ring">
-                    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-                    <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
-                    <text x="100" y="80" text-anchor="middle" fill="currentColor" font-size="14" font-family="serif" opacity="0.7">ᚱᚢᚾᛁᚲ</text>
-                    <text x="100" y="130" text-anchor="middle" fill="currentColor" font-size="36" font-weight="bold">&#x16A0;</text>
-                </svg>
-            </div>
-
-            <h1 class="title">Рунический портал</h1>
-            <p class="subtitle">Расшифруйте древние письмена</p>
-
-            <div class="login-tabs">
-                <button class="tab-btn active" data-tab="join">Подключиться к комнате</button>
-                <button class="tab-btn" data-tab="create">Создать комнату</button>
-            </div>
-
-            <!-- Форма подключения -->
-            <form id="join-form" class="login-form active">
-                <div class="input-group">
-                    <label for="join-room-id">ID комнаты</label>
-                    <input type="text" id="join-room-id" placeholder="Введите ID комнаты" required>
-                </div>
-                <div class="input-group">
-                    <label for="join-nickname">Ваше имя, странник</label>
-                    <input type="text" id="join-nickname" placeholder="Имя персонажа" required>
-                </div>
-                <div class="input-group master-only" style="display:none;">
-                    <label for="join-master-password">Пароль мастера (для входа как мастер)</label>
-                    <input type="password" id="join-master-password" placeholder="Оставьте пустым для входа как игрок">
-                </div>
-                <button type="submit" class="btn-primary">Войти в комнату</button>
-            </form>
-
-            <!-- Форма создания -->
-            <form id="create-form" class="login-form">
-                <div class="input-group">
-                    <label for="create-master-name">Имя мастера</label>
-                    <input type="text" id="create-master-name" placeholder="Ваше имя, хранитель знаний" required>
-                </div>
-                <div class="input-group">
-                    <label for="create-master-password">Пароль мастера</label>
-                    <input type="password" id="create-master-password" placeholder="Задайте пароль" required minlength="4">
-                </div>
-                <div class="input-group">
-                    <label for="create-room-name">Название комнаты</label>
-                    <input type="text" id="create-room-name" placeholder="Название вашего приключения" required>
-                </div>
-                <button type="submit" class="btn-primary">Создать комнату</button>
-            </form>
-
-            <div id="login-error" class="error-message"></div>
-        </div>
-    </div>
-
-    <!-- Экран игры -->
-    <div id="game-screen" class="screen">
-        <header class="game-header">
-            <div class="room-info">
-                <span class="room-badge" id="room-id-display"></span>
-                <span class="room-name" id="room-name-display"></span>
-            </div>
-            <div class="header-actions">
-                <span class="player-name" id="player-name-display"></span>
-                <span class="role-badge" id="role-badge-display"></span>
-                <button class="btn-leave" id="btn-leave">Покинуть комнату</button>
-            </div>
-        </header>
-
-        <div class="game-layout">
-            <!-- Боковая панель: Руны -->
-            <aside class="panel rune-panel" id="rune-panel">
-                <div class="panel-header">
-                    <h2 id="rune-panel-title">Алфавит рун</h2>
-                </div>
-                <div class="panel-body" id="rune-panel-body">
-                    <!-- Динамически заполняется -->
-                </div>
-            </aside>
-
-            <!-- Центральная область: чат -->
-            <main class="panel chat-panel">
-                <div class="panel-header">
-                    <h2>Чат</h2>
-                </div>
-                <div class="chat-messages" id="chat-messages"></div>
-                <div class="chat-input-area">
-                    <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
-                    <button id="btn-send" class="btn-send">Отправить</button>
-                </div>
-            </main>
-
-            <!-- Правая панель: инструменты -->
-            <aside class="panel tools-panel" id="tools-panel">
-                <div class="panel-header">
-                    <h2 id="tools-panel-title">Инструменты</h2>
-                </div>
-                <div class="panel-body" id="tools-panel-body">
-                    <!-- Динамически заполняется: переводчик, коды, мини-игры -->
-                </div>
-            </aside>
-        </div>
-
-        <!-- Модальное окно мини-игры -->
-        <div class="modal-overlay" id="game-modal">
-            <div class="modal-content" id="game-modal-content"></div>
-        </div>
-
-        <!-- Модальное окно копирования -->
-        <div class="toast" id="toast"></div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-    <script src="js/config.js"></script>
-    <script src="js/db.js"></script>
-    <script src="js/runes.js"></script>
-    <script src="js/chat.js"></script>
-    <script src="js/games/games-manager.js"></script>
-    <script src="js/games/memory-colors.js"></script>
-    <script src="js/games/find-pairs.js"></script>
-    <script src="js/games/cups.js"></script>
-    <script src="js/games/timer.js"></script>
-    <script src="js/games/catch-balls.js"></script>
-    <script src="js/app.js"></script>
-</body>
-</html>
+class TimerGame {
+    constructor(container, onWin) { this.container=container; this.onWin=onWin; this.targetTime=0; this.startTime=0; this.elapsed=0; this.running=false; this.covered=false; this.timerInterval=null; this.init(); }
+    init() {
+        this.targetTime = 5 + Math.random()*25;
+        this.container.innerHTML = `<div class="game-status">Остановите на <strong>${this.targetTime.toFixed(2)}</strong> сек</div><div class="timer-display" id="timer-display">0.00</div><div class="timer-blanket" id="timer-blanket" style="display:none;"></div><div class="game-controls"><button class="game-btn-control" id="btn-timer-start">Старт</button><button class="game-btn-control" id="btn-timer-stop" disabled>Стоп</button><button class="game-btn-control" id="btn-timer-reset">Сброс</button></div>`;
+        document.getElementById('btn-timer-start').addEventListener('click',()=>this.start());
+        document.getElementById('btn-timer-stop').addEventListener('click',()=>this.stop());
+        document.getElementById('btn-timer-reset').addEventListener('click',()=>this.reset());
+    }
+    start() {
+        if(this.running) return; this.running=true; this.covered=false;
+        this.startTime=Date.now(); document.getElementById('btn-timer-start').disabled=true; document.getElementById('btn-timer-stop').disabled=false;
+        document.getElementById('timer-blanket').style.display='none'; document.getElementById('timer-display').textContent='0.00';
+        this.timerInterval = setInterval(()=>{
+            this.elapsed=(Date.now()-this.startTime)/1000;
+            document.getElementById('timer-display').textContent=this.elapsed.toFixed(2);
+            if(this.elapsed>=1.0 && !this.covered){ this.covered=true; document.getElementById('timer-blanket').style.display='flex'; }
+        },10);
+    }
+    stop() {
+        if(!this.running) return; this.running=false; clearInterval(this.timerInterval);
+        this.elapsed=(Date.now()-this.startTime)/1000;
+        document.getElementById('timer-blanket').style.display='none';
+        document.getElementById('timer-display').textContent=this.elapsed.toFixed(2);
+        document.getElementById('btn-timer-start').disabled=false; document.getElementById('btn-timer-stop').disabled=true;
+        const diff=Math.abs(this.elapsed-this.targetTime);
+        if(diff<=0.01){ document.querySelector('.game-status').textContent='Закрою глаза — засчитываю!'; setTimeout(()=>this.onWin(true),1500); }
+        else { document.querySelector('.game-status').textContent=`Разница: ${diff.toFixed(2)} сек. Попробуйте ещё.`; }
+    }
+    reset() { this.running=false; clearInterval(this.timerInterval); this.elapsed=0; this.covered=false; document.getElementById('timer-display').textContent='0.00'; document.getElementById('btn-timer-start').disabled=false; document.getElementById('btn-timer-stop').disabled=true; document.getElementById('timer-blanket').style.display='none'; this.targetTime=5+Math.random()*25; document.querySelector('.game-status').innerHTML=`Остановите на <strong>${this.targetTime.toFixed(2)}</strong> сек`; }
+    cleanup(){ clearInterval(this.timerInterval); }
+}
