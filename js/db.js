@@ -1,4 +1,4 @@
-// Модуль работы с базой данных Supabase
+// Модуль работы с базой данных dbClient
 
 const DB = {
     // Текущая комната и пользователь
@@ -10,7 +10,7 @@ const DB = {
     // Создать комнату
     async createRoom(roomName, masterName, masterPasswordHash) {
         const roomId = this.generateRoomId();
-        const { data, error } = await supabase
+        const { data, error } = await dbClient
             .from('rooms')
             .insert({
                 id: roomId,
@@ -33,7 +33,7 @@ const DB = {
 
     // Подключиться к комнате
     async joinRoom(roomId, nickname, isMaster = false, passwordHash = null) {
-        const { data: room, error } = await supabase
+        const { data: room, error } = await dbClient
             .from('rooms')
             .select('*')
             .eq('id', roomId)
@@ -59,7 +59,7 @@ const DB = {
 
         // Если игрок, создаём запись прогресса
         if (!isMaster) {
-            const { data: existing } = await supabase
+            const { data: existing } = await dbClient
                 .from('player_progress')
                 .select('*')
                 .eq('room_id', roomId)
@@ -67,7 +67,7 @@ const DB = {
                 .single();
 
             if (!existing) {
-                await supabase.from('player_progress').insert({
+                await dbClient.from('player_progress').insert({
                     room_id: roomId,
                     player_id: this.currentUser.id,
                     player_name: nickname,
@@ -86,7 +86,7 @@ const DB = {
 
     // Подписка на real-time обновления
     async subscribeToRoom(roomId) {
-        this.channel = supabase
+        this.channel = dbClient
             .channel(`room:${roomId}`)
             .on('broadcast', { event: 'chat' }, (payload) => {
                 if (typeof onChatMessage === 'function') {
@@ -113,7 +113,7 @@ const DB = {
         };
 
         // Сохраняем в БД
-        await supabase.from('chat_messages').insert({
+        await dbClient.from('chat_messages').insert({
             room_id: this.currentRoom.id,
             message_id: message.id,
             author: message.author,
@@ -135,7 +135,7 @@ const DB = {
 
     // Загрузить историю чата
     async loadChatHistory() {
-        const { data, error } = await supabase
+        const { data, error } = await dbClient
             .from('chat_messages')
             .select('*')
             .eq('room_id', this.currentRoom.id)
@@ -155,7 +155,7 @@ const DB = {
 
     // Добавить реакцию
     async addReaction(messageId, reaction) {
-        const { data: msg } = await supabase
+        const { data: msg } = await dbClient
             .from('chat_messages')
             .select('reactions')
             .eq('message_id', messageId)
@@ -165,7 +165,7 @@ const DB = {
         const reactions = typeof msg.reactions === 'string' ? JSON.parse(msg.reactions) : (msg.reactions || {});
         reactions[reaction] = (reactions[reaction] || 0) + 1;
 
-        await supabase
+        await dbClient
             .from('chat_messages')
             .update({ reactions: JSON.stringify(reactions) })
             .eq('message_id', messageId);
@@ -174,7 +174,7 @@ const DB = {
     // Обновить догадки игрока о рунах
     async updateRuneGuesses(guesses) {
         if (this.isMaster) return;
-        await supabase
+        await dbClient
             .from('player_progress')
             .update({ rune_guesses: JSON.stringify(guesses) })
             .eq('room_id', this.currentRoom.id)
@@ -195,7 +195,7 @@ const DB = {
     // Разблокировать руну (после мини-игры)
     async unlockRune(runeSymbol, runeValue) {
         if (this.isMaster) return;
-        const { data: progress } = await supabase
+        const { data: progress } = await dbClient
             .from('player_progress')
             .select('*')
             .eq('room_id', this.currentRoom.id)
@@ -217,7 +217,7 @@ const DB = {
             : (progress.rune_guesses || {});
         guesses[runeSymbol] = { value: runeValue, status: 'locked' };
 
-        await supabase
+        await dbClient
             .from('player_progress')
             .update({
                 unlocked_runes: JSON.stringify(unlocked),
@@ -242,7 +242,7 @@ const DB = {
 
     // Получить прогресс всех игроков (для мастера)
     async getPlayersProgress() {
-        const { data, error } = await supabase
+        const { data, error } = await dbClient
             .from('player_progress')
             .select('*')
             .eq('room_id', this.currentRoom.id);
@@ -271,12 +271,12 @@ const DB = {
                 });
             }
         }
-        await supabase.from('game_codes').insert(codes);
+        await dbClient.from('game_codes').insert(codes);
     },
 
     // Проверить код мини-игры
     async verifyCode(code) {
-        const { data, error } = await supabase
+        const { data, error } = await dbClient
             .from('game_codes')
             .select('*')
             .eq('room_id', this.currentRoom.id)
@@ -290,7 +290,7 @@ const DB = {
 
     // Отметить код как использованный
     async markCodeUsed(codeId) {
-        await supabase
+        await dbClient
             .from('game_codes')
             .update({ used: true })
             .eq('id', codeId);
@@ -298,7 +298,7 @@ const DB = {
 
     // Получить коды комнаты (для мастера)
     async getRoomCodes() {
-        const { data } = await supabase
+        const { data } = await dbClient
             .from('game_codes')
             .select('*')
             .eq('room_id', this.currentRoom.id)
@@ -342,7 +342,7 @@ const DB = {
     // Отключиться
     async disconnect() {
         if (this.channel) {
-            await supabase.removeChannel(this.channel);
+            await dbClient.removeChannel(this.channel);
             this.channel = null;
         }
         this.currentRoom = null;
