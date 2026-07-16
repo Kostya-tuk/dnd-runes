@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Рунический портал</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+
+    <div id="login-screen" class="screen active">
+        <div class="login-container">
+            <div class="rune-circle">
+                <svg viewBox="0 0 200 200" class="rune-ring">
+                    <circle cx="100" cy="100" r="90" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
+                    <circle cx="100" cy="100" r="78" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>
+                    <text x="100" y="80" text-anchor="middle" fill="currentColor" font-size="14" font-family="serif" opacity="0.7">ᚱᚢᚾᛁᚲ</text>
+                    <text x="100" y="130" text-anchor="middle" fill="currentColor" font-size="36" font-weight="bold">&#x16A0;</text>
+                </svg>
+            </div>
+            <h1 class="title">Рунический портал</h1>
+            <p class="subtitle">Расшифруйте древние письмена</p>
+            <div class="login-tabs">
+                <button class="tab-btn active" data-tab="join">Подключиться к комнате</button>
+                <button class="tab-btn" data-tab="create">Создать комнату</button>
+            </div>
+            <form id="join-form" class="login-form active">
+                <div class="input-group">
+                    <label for="join-room-id">ID комнаты</label>
+                    <input type="text" id="join-room-id" placeholder="Введите ID комнаты" required>
+                </div>
+                <div class="input-group">
+                    <label for="join-nickname">Ваше имя, странник</label>
+                    <input type="text" id="join-nickname" placeholder="Имя персонажа" required>
+                </div>
+                <div class="input-group master-only" style="display:none;">
+                    <label for="join-master-access-code">Код доступа мастера</label>
+                    <input type="password" id="join-master-access-code" placeholder="Секретный код">
+                </div>
+                <button type="submit" class="btn-primary">Войти в комнату</button>
+            </form>
+            <form id="create-form" class="login-form">
+                <div class="input-group">
+                    <label for="create-master-name">Имя мастера</label>
+                    <input type="text" id="create-master-name" placeholder="Ваше имя, хранитель знаний" required>
+                </div>
+                <div class="input-group">
+                    <label for="create-master-access-code">Код доступа мастера</label>
+                    <input type="password" id="create-master-access-code" placeholder="Секретный код" required>
+                </div>
+                <div class="input-group">
+                    <label for="create-master-password">Пароль комнаты</label>
+                    <input type="password" id="create-master-password" placeholder="Задайте пароль для комнаты" required minlength="4">
+                </div>
+                <div class="input-group">
+                    <label for="create-room-name">Название комнаты</label>
+                    <input type="text" id="create-room-name" placeholder="Название вашего приключения" required>
+                </div>
+                <button type="submit" class="btn-primary">Создать комнату</button>
+            </form>
+            <div id="login-error" class="error-message"></div>
+        </div>
+    </div>
+
+    <div id="game-screen" class="screen">
+        <header class="game-header">
+            <div class="room-info">
+                <span class="room-badge" id="room-id-display"></span>
+                <span class="room-name" id="room-name-display"></span>
+            </div>
+            <div class="header-actions">
+                <span class="player-name" id="player-name-display"></span>
+                <span class="role-badge" id="role-badge-display"></span>
+                <button class="btn-leave" id="btn-leave">Покинуть комнату</button>
+            </div>
+        </header>
+        <div class="game-layout">
+            <aside class="panel rune-panel" id="rune-panel">
+                <div class="panel-header"><h2 id="rune-panel-title">Алфавит рун</h2></div>
+                <div class="panel-body" id="rune-panel-body"></div>
+            </aside>
+            <main class="panel chat-panel">
+                <div class="panel-header"><h2>Чат</h2></div>
+                <div class="chat-messages" id="chat-messages"></div>
+                <div class="chat-input-area">
+                    <textarea id="chat-input" placeholder="Введите сообщение..." rows="2"></textarea>
+                    <button id="btn-send" class="btn-send">Отправить</button>
+                </div>
+            </main>
+            <aside class="panel tools-panel" id="tools-panel">
+                <div class="panel-header"><h2 id="tools-panel-title">Инструменты</h2></div>
+                <div class="panel-body" id="tools-panel-body"></div>
+            </aside>
+        </div>
+
+        <div class="modal-overlay" id="game-modal">
+            <div class="modal-content" id="game-modal-content"></div>
+        </div>
+        <div class="toast" id="toast"></div>
+        <div class="notification" id="notification"></div>
+    </div>
+
+    <!-- Плавающая клавиатура рун -->
+    <div class="rune-keyboard-float" id="rune-keyboard-float" style="display:none;">
+        <div class="rune-keyboard-header" id="rune-keyboard-drag-handle">
+            <span>Клавиатура рун</span>
+            <button class="keyboard-close" id="keyboard-close">✕</button>
+        </div>
+        <div class="rune-keyboard-body" id="rune-keyboard-body"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/runes.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/games/games-manager.js"></script>
+    <script src="js/games/memory-colors.js"></script>
+    <script src="js/games/find-pairs.js"></script>
+    <script src="js/games/cups.js"></script>
+    <script src="js/games/timer.js"></script>
+    <script src="js/games/catch-balls.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
